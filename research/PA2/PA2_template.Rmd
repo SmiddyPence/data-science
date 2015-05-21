@@ -1,0 +1,40 @@
+---
+title: "PA2_template.html"
+author: "Nick"
+date: "Thursday, May 21, 2015"
+output: html_document
+---
+
+Download Data
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
+
+
+```{r}
+data.raw <- read.csv(bzfile("data/repdata-data-StormData.csv.bz2", "repdata-data-StormData.csv"))
+```
+
+Ten year analysis, better measures.  Better safety.
+
+```{r}
+data.raw$BGN_DATE <- as.Date(data.raw$BGN_DATE, format = "%m/%d/%Y %H:%M:%S")
+data.recent <- data.raw[data.raw$BGN_DATE > "2000-12-31",]
+data.recent <- data.recent[c('EVTYPE','FATALITIES','INJURIES', 'PROPDMG',  'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP')]
+```
+
+```{r}
+data.fatalities <- aggregate(x= data.recent['FATALITIES'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
+data.fatalities.ordered <- data.fatalities[rev(order(data.fatalities$FATALITIES)),]
+data.fatalities.top <- data.fatalities.ordered[1:10,]
+fatality.event.names <- as.character(data.fatalities.top[,1]);
+
+data.injuries <- aggregate(x= data.recent['INJURIES'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
+data.injuries.ordered <- data.injuries[rev(order(data.injuries$INJURIES)),]
+data.injuries.top <- data.injuries.ordered[1:10,]
+injury.event.names <- as.character(data.injuries.top[,1]);
+
+par(mfrow=c(2,1))
+barplot(data.fatalities.top$FATALITIES, main = "Fatalities by Event", xlab = "Event", names.arg=fatality.event.names)
+
+barplot(data.injuries.top$INJURIES, main = "Injuries by Event", xlab = "Event", names.arg=injury.event.names)
+```
+

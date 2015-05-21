@@ -1,0 +1,1 @@
+Some useful functions I have collected over time.
