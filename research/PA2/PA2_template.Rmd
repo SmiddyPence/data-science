@@ -11,12 +11,13 @@ https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
 ### Initial Setup
 ```{r}
 library(ggplot2)
+library(gridExtra)
 ```
 
 
 ### Load Data
 ```{r}
-data.raw <- read.csv(bzfile("data/repdata-data-StormData.csv.bz2", "repdata-data-StormData.csv"))
+data.raw <- read.csv(bzfile("data/repdata-data-StormData.csv.bz2", "repdata-data-StormData.csv"), stringsAsFactors=FALSE)
 ```
 
 Ten year analysis, better measures.  Better safety.
@@ -26,6 +27,8 @@ data.raw$BGN_DATE <- as.Date(data.raw$BGN_DATE, format = "%m/%d/%Y %H:%M:%S")
 data.recent <- data.raw[data.raw$BGN_DATE > "2000-12-31",]
 data.recent <- data.recent[c('EVTYPE','FATALITIES','INJURIES', 'PROPDMG',  'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP')]
 ```
+
+Look at affect on public health
 
 ```{r}
 data.fatalities <- aggregate(x= data.recent['FATALITIES'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
@@ -54,4 +57,49 @@ f2 <- qplot(EVTYPE,  data=data.injuries.top, weight = INJURIES, geom="bar") +
 
 grid.arrange(f1, f2, ncol = 2)
 ```
+
+Look at affect on economy
+
+```{r}
+factor.lookup <- data.frame(c("B","M","K","H",""),c(1000000000, 1000000, 1000, 100, 1))
+colnames(factor.lookup) <- c("CODE","VALUE")
+
+data.recent$PROPFACTOR <-
+  with(factor.lookup, VALUE[match(data.recent$PROPDMGEXP, CODE)])
+data.recent$PROPTOTAL <- data.recent$PROPDMG * data.recent$PROPFACTOR
+
+data.recent$CROPFACTOR <-
+  with(factor.lookup, VALUE[match(data.recent$CROPDMGEXP, CODE)])
+data.recent$CROPTOTAL <- data.recent$CROPDMG * data.recent$CROPFACTOR
+
+data.prop.damage <- aggregate(x= data.recent['PROPTOTAL'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
+data.prop.damage.ordered <- data.prop.damage[rev(order(data.prop.damage$PROPTOTAL)),]
+data.prop.damage.top <- data.prop.damage.ordered[1:10,]
+colnames(data.prop.damage.top) <- c("EVTYPE", "COST")
+data.prop.damage.top$EVTYPE <- factor(data.prop.damage.top$EVTYPE, levels=data.prop.damage.top[rev(order(data.prop.damage.top$COST)), "EVTYPE"])
+
+data.crop.damage <- aggregate(x= data.recent['CROPTOTAL'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
+data.crop.damage.ordered <- data.crop.damage[rev(order(data.crop.damage$CROPTOTAL)),]
+data.crop.damage.top <- data.crop.damage.ordered[1:10,]
+colnames(data.crop.damage.top) <- c("EVTYPE", "COST")
+data.crop.damage.top$EVTYPE <- factor(data.crop.damage.top$EVTYPE, levels=data.crop.damage.top[rev(order(data.crop.damage.top$COST)), "EVTYPE"])
+
+
+f3 <- qplot(EVTYPE,  data=data.prop.damage.top, weight = COST, geom="bar") + 
+    scale_y_continuous("Cost USD") +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Cost to Property of Severe Weather\n Between 2001 - 2011")
+
+f4 <- qplot(EVTYPE,  data=data.crop.damage.top, weight = COST, geom="bar") + 
+    scale_y_continuous("Cost USD") +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Cost to Crops of Severe Weather\n Between 2001 - 2011")
+
+grid.arrange(f3, f4, ncol = 2)
+```
+
+
+
 
