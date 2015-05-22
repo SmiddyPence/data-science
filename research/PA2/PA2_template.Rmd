@@ -8,7 +8,13 @@ output: html_document
 Download Data
 https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
 
+### Initial Setup
+```{r}
+library(ggplot2)
+```
 
+
+### Load Data
 ```{r}
 data.raw <- read.csv(bzfile("data/repdata-data-StormData.csv.bz2", "repdata-data-StormData.csv"))
 ```
@@ -25,16 +31,27 @@ data.recent <- data.recent[c('EVTYPE','FATALITIES','INJURIES', 'PROPDMG',  'PROP
 data.fatalities <- aggregate(x= data.recent['FATALITIES'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
 data.fatalities.ordered <- data.fatalities[rev(order(data.fatalities$FATALITIES)),]
 data.fatalities.top <- data.fatalities.ordered[1:10,]
-fatality.event.names <- as.character(data.fatalities.top[,1]);
+colnames(data.fatalities.top) <- c("EVTYPE", "FATALITIES")
+data.fatalities.top$EVTYPE <- factor(data.fatalities.top$EVTYPE, levels=data.fatalities.top[rev(order(data.fatalities.top$FATALITIES)), "EVTYPE"])
 
 data.injuries <- aggregate(x= data.recent['INJURIES'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
 data.injuries.ordered <- data.injuries[rev(order(data.injuries$INJURIES)),]
 data.injuries.top <- data.injuries.ordered[1:10,]
-injury.event.names <- as.character(data.injuries.top[,1]);
+colnames(data.injuries.top) <- c("EVTYPE", "INJURIES")
+data.injuries.top$EVTYPE <- factor(data.injuries.top$EVTYPE, levels=data.injuries.top[rev(order(data.injuries.top$INJURIES)), "EVTYPE"])
 
-par(mfrow=c(2,1))
-barplot(data.fatalities.top$FATALITIES, main = "Fatalities by Event", xlab = "Event", names.arg=fatality.event.names)
+f1 <- qplot(EVTYPE,  data=data.fatalities.top, weight = FATALITIES, geom="bar") + 
+    scale_y_continuous("Fatalities") +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Fatalities from Severe Weather\n Between 2001 - 2011")
 
-barplot(data.injuries.top$INJURIES, main = "Injuries by Event", xlab = "Event", names.arg=injury.event.names)
+f2 <- qplot(EVTYPE,  data=data.injuries.top, weight = INJURIES, geom="bar") + 
+    scale_y_continuous("Injuries") +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Injuries from Severe Weather\n Between 2001 - 2011")
+
+grid.arrange(f1, f2, ncol = 2)
 ```
 
