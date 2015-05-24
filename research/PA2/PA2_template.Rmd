@@ -19,7 +19,7 @@ The affects of climate change in recent years has lead to notatable differences 
 
 - If you would prefer to download the data yourself it is avaiable [here](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) also
 
-- The analysis below requires the following packages: `ggplot2`, `gridExtra`.  Use the `install.packages` function if you do not already have them.
+- The analysis below requires the following packages: `ggplot2`, `gridExtra` and `scales`.  Use the `install.packages` function if you do not already have them.
 
 - This project is focusing on *literate* programming as apose to *data cleaning*. As such no great lengths are perfromed to cleanse the data beyond the minimum requirements.
 
@@ -30,6 +30,7 @@ Load the libraries required to perform the analysis
 ```{r}
 library(ggplot2)
 library(gridExtra)
+library(scales)
 ```
 
 
@@ -134,13 +135,13 @@ f2 <- qplot(EVTYPE,  data=data.injuries.top, weight = INJURIES, geom="bar") +
     ggtitle("Total Injuries from\n Severe Weather\n Between 2001 - 2011")
 
 f3 <- qplot(EVTYPE,  data=data.prop.damage.top, weight = COST, geom="bar") + 
-    scale_y_continuous("Cost USD") +
+    scale_y_continuous("Cost USD", labels = comma) +
     xlab("Event Type") + 
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     ggtitle("Total Cost to Property\n of Severe Weather\n Between 2001 - 2011")
 
 f4 <- qplot(EVTYPE,  data=data.crop.damage.top, weight = COST, geom="bar") + 
-    scale_y_continuous("Cost USD") +
+    scale_y_continuous("Cost USD", labels = comma) +
     xlab("Event Type") + 
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     ggtitle("Total Cost to Crops\n of Severe Weather\n Between 2001 - 2011")
