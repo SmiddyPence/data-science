@@ -5,22 +5,44 @@ date: "Thursday, May 21, 2015"
 output: html_document
 ---
 
-Download Data
-https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
+# The impact of sever weather on public health and infrastructure 2001-2011
+
+## Synopsis 
+
+The following study looks at data collected between 2001 and 2011 from the NOAA Storm Database.  Although the database contains data back to the 1950's it was thought that only the most recent data should be considered.  This is owing to the fact that advancements in protection and measurements systems have advanced signicantly since the 50s.
+
+The affects of climate change in recent years has lead to notatable differences in the extreme weather conditions currently being expereienced.  With this in mind the most recent ten years of data are considered to base upcoming decisions on.
+
+### Assumptions
+
+- Data for this project is distributed through GitHub along with this code.  Please set your working directory to the root of the checkout project `setwd`.
+
+- If you would prefer to download the data yourself it is avaiable [here](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) also
+
+- The analysis below requires the following packages: `ggplot2`, `gridExtra` and `scales`.  Use the `install.packages` function if you do not already have them.
+
+- This project is focusing on *literate* programming as apose to *data cleaning*. As such no great lengths are perfromed to cleanse the data beyond the minimum requirements.
 
 ### Initial Setup
+
+Load the libraries required to perform the analysis
+
 ```{r}
 library(ggplot2)
 library(gridExtra)
+library(scales)
 ```
 
 
-### Load Data
+### Data Processing
+
+Load the complete set of NOAA data into a dataframe.
+
 ```{r}
 data.raw <- read.csv(bzfile("data/repdata-data-StormData.csv.bz2", "repdata-data-StormData.csv"), stringsAsFactors=FALSE)
 ```
 
-Ten year analysis, better measures.  Better safety.
+This analysis will focus on the most recent ten years of data.  First we'll convert the begin date field is a true date rather than a string of characters.  We then create a new dataframe with the most recent data and also only keep the columns we're interessted in for this analysis. 
 
 ```{r}
 data.raw$BGN_DATE <- as.Date(data.raw$BGN_DATE, format = "%m/%d/%Y %H:%M:%S")
@@ -28,7 +50,15 @@ data.recent <- data.raw[data.raw$BGN_DATE > "2000-12-31",]
 data.recent <- data.recent[c('EVTYPE','FATALITIES','INJURIES', 'PROPDMG',  'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP')]
 ```
 
-Look at affect on public health
+#### Public Health Impact
+
+Initially we'll look to create two dataframes one to contain the fatality data `data.fatalities` and one the injury `data.injuries`.
+
+- First we aggregate the data by event type `EVTYPE` and `sum` to get a grand total of fatalities and injuries
+- Then we reverse order the dataframe to get the top events.
+- We subset the dataframe to take the ten most damaging event types
+- Tidy up column names to be either `EVTYPE` and `FATALITIES` or `INJURIES` respectively
+- Finally we re create the factor of the `EVTYPE` column so our result figures display in descending order
 
 ```{r}
 data.fatalities <- aggregate(x= data.recent['FATALITIES'], by=list(data.recent$EVTYPE), FUN=sum, na.rm=TRUE)
@@ -42,23 +72,20 @@ data.injuries.ordered <- data.injuries[rev(order(data.injuries$INJURIES)),]
 data.injuries.top <- data.injuries.ordered[1:10,]
 colnames(data.injuries.top) <- c("EVTYPE", "INJURIES")
 data.injuries.top$EVTYPE <- factor(data.injuries.top$EVTYPE, levels=data.injuries.top[rev(order(data.injuries.top$INJURIES)), "EVTYPE"])
-
-f1 <- qplot(EVTYPE,  data=data.fatalities.top, weight = FATALITIES, geom="bar") + 
-    scale_y_continuous("Fatalities") +
-    xlab("Event Type") + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ggtitle("Total Fatalities from Severe Weather\n Between 2001 - 2011")
-
-f2 <- qplot(EVTYPE,  data=data.injuries.top, weight = INJURIES, geom="bar") + 
-    scale_y_continuous("Injuries") +
-    xlab("Event Type") + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ggtitle("Total Injuries from Severe Weather\n Between 2001 - 2011")
-
-grid.arrange(f1, f2, ncol = 2)
 ```
 
-Look at affect on economy
+
+#### Economic Impact
+
+First we'll look to create two dataframes one to contain the property data `data.prop` and one the crop `data.crop`.
+
+- First we will create a lookup table for the exponent columns relating the cost of PROPERTY and CROP damage `___EXP`. With `H` hundred relating to `100` and `K` thousand relating to `1000` etc.
+- We then create some additional data columns to get provide the total costs after factoring by the exponent.
+- As before we then aggregate the data by event type `EVTYPE` and `sum` to get a grand total of property and crop damage
+- Then we reverse order the dataframe to get the top events.
+- We subset the dataframe to take the ten most damaging event types
+- Tidy up column names to be either `EVTYPE` and `COST`
+- Finally we re create the factor of the `EVTYPE` column so our result figures display in descending order
 
 ```{r}
 factor.lookup <- data.frame(c("B","M","K","H",""),c(1000000000, 1000000, 1000, 100, 1))
@@ -83,23 +110,51 @@ data.crop.damage.ordered <- data.crop.damage[rev(order(data.crop.damage$CROPTOTA
 data.crop.damage.top <- data.crop.damage.ordered[1:10,]
 colnames(data.crop.damage.top) <- c("EVTYPE", "COST")
 data.crop.damage.top$EVTYPE <- factor(data.crop.damage.top$EVTYPE, levels=data.crop.damage.top[rev(order(data.crop.damage.top$COST)), "EVTYPE"])
-
-
-f3 <- qplot(EVTYPE,  data=data.prop.damage.top, weight = COST, geom="bar") + 
-    scale_y_continuous("Cost USD") +
-    xlab("Event Type") + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ggtitle("Total Cost to Property of Severe Weather\n Between 2001 - 2011")
-
-f4 <- qplot(EVTYPE,  data=data.crop.damage.top, weight = COST, geom="bar") + 
-    scale_y_continuous("Cost USD") +
-    xlab("Event Type") + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ggtitle("Total Cost to Crops of Severe Weather\n Between 2001 - 2011")
-
-grid.arrange(f3, f4, ncol = 2)
 ```
 
 
+### Results 
+
+For our result we will create four figures that we'll use later in our results,  `f1` will contain the information relating to `FATALITIES` and `f2` `INJURIES`.  `f3` relates to property damage cost and `f4` crop damage cost.
+
+Each figure will be a bar plot and add a few aesthetics to make it render nicely.  Ensuring the axis are labels the plots are titles and the event elements are labeled at an angle so they can be seen.
+
+We then group figures 1 & 2 together to demonstrate the public health impact and also group 3 & 4 together to show economic cost.
+
+```{r}
+f1 <- qplot(EVTYPE,  data=data.fatalities.top, weight = FATALITIES, geom="bar") + 
+    scale_y_continuous("Fatalities") +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Fatalities from\n Severe Weather\n Between 2001 - 2011")
+
+f2 <- qplot(EVTYPE,  data=data.injuries.top, weight = INJURIES, geom="bar") + 
+    scale_y_continuous("Injuries") +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Injuries from\n Severe Weather\n Between 2001 - 2011")
+
+f3 <- qplot(EVTYPE,  data=data.prop.damage.top, weight = COST, geom="bar") + 
+    scale_y_continuous("Cost USD", labels = comma) +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Cost to Property\n of Severe Weather\n Between 2001 - 2011")
+
+f4 <- qplot(EVTYPE,  data=data.crop.damage.top, weight = COST, geom="bar") + 
+    scale_y_continuous("Cost USD", labels = comma) +
+    xlab("Event Type") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Total Cost to Crops\n of Severe Weather\n Between 2001 - 2011")
+```
+
+#### Impact on Public Health
+```{r}
+grid.arrange(f1, f2, ncol = 2)
+```
+
+#### Impact on Economy (Infrastructure & Crops)
+```{r}
+grid.arrange(f3, f4, ncol = 2)
+```
 
 
