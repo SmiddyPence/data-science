@@ -1,0 +1,54 @@
+---
+title: "Coursera - Statistical Inference Project"
+author: "Nicholas Smith"
+date: "Friday, July 24, 2015"
+output: html_document
+---
+
+## Overview
+
+This project will investigate the exponential distribution in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with rexp(n, $\lambda$) where $\lambda$ is the rate parameter.
+
+
+### 1) Show the sample mean and compare it to the theoretical mean of the distribution.
+
+Consider the mean of the Exponential Distribution is 1/$\lambda$
+
+For this analysis we will be using a lambda value of 0.2
+
+```{r}
+lambda <- 0.2
+lambda
+```
+
+Therefore our expected mean will be 5
+
+```{r}
+expected_mean <- 1/lambda 
+expected_mean
+```
+
+First we need to simulate some data, we will run a 1000 simulations determining the average of 40 exponentials.
+
+```{r}
+sample_means = NULL
+for (i in 1 : 1000){
+  sample_means = c(sample_means, mean(rexp(40, lambda)))  
+} 
+```
+
+The centre of our distrubtion is therefore:
+
+```{r}
+sample_mean <- mean(sample_means)
+sample_mean
+```
+
+```{r}
+hist(sample_means)
+```
+
+### 2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+
+### 3) Show that the distribution is approximately normal
+
