@@ -45,7 +45,14 @@ sample_mean
 ```
 
 ```{r}
-hist(sample_means)
+hist(sample_means, breaks=80, prob=TRUE,
+     main="Averages of Exponential samples distribution",
+     xlab="")
+lines(density(sample_means))
+abline(v=expected_mean, col ="blue")
+abline(v=sample_mean, col ="green")
+legend("topright", c("Expected Mean", "Sample Mean"), 
+       col=c("blue", "green"), lwd=1)
 ```
 
 ### 2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
