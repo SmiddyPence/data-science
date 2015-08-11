@@ -31,9 +31,10 @@ expected_mean
 First we need to simulate some data, we will run a 1000 simulations determining the average of 40 exponentials.
 
 ```{r}
-sample_means = NULL
+number_samples <- 40
+sample_means <- NULL
 for (i in 1 : 1000){
-  sample_means = c(sample_means, mean(rexp(40, lambda)))  
+  sample_means = c(sample_means, mean(rexp(number_samples, lambda)))  
 } 
 ```
 
@@ -45,17 +46,53 @@ sample_mean
 ```
 
 ```{r}
-hist(sample_means, breaks=80, prob=TRUE,
-     main="Averages of Exponential samples distribution",
+hist(sample_means, breaks=40, prob=TRUE,
+     main="Distribution of Exponential Sample Means",
      xlab="")
-lines(density(sample_means))
 abline(v=expected_mean, col ="blue")
 abline(v=sample_mean, col ="green")
 legend("topright", c("Expected Mean", "Sample Mean"), 
        col=c("blue", "green"), lwd=1)
 ```
 
+As we can see with just these 1000 simulations the expected and sample mean are very close.
+
 ### 2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+
+The theoretical variance for our distributions is 1/$\lambda$ to the power of 2 divided by the number of observations.
+
+```{r}
+expected_variance <- ((1/lambda)^2)/number_samples
+expected_variance
+```
+
+The variance for our sample means is:
+
+```{r}
+sample_variance <- var(sample_means)
+sample_variance
+```
+
+Although not as close as the means the expected and sample variance are close.
 
 ### 3) Show that the distribution is approximately normal
 
+A distribution is considered normal if it meets the following criteria:
+
+* The normal curve is symmetrical about the mean $\mu$
+* The mean is at the middle and divides the area into halves
+* The total area under the curve is equal to 1
+* It is completely determined by its mean and standard deviation $\sigma$ (or variance $\sigma$^2)
+
+
+```{r}
+hist(sample_means, breaks=40, prob=TRUE,
+     main="Distribution of Exponential Sample Means",
+     xlab="")
+abline(v=sample_mean, col ="green")
+lines(density(sample_means))
+legend("topright", c("Sample Distribution", "Sample Mean"), 
+       col=c("black", "green"), lwd=1)
+```
+
+From the above figure above and the answers to questions 1 and 2 we can see that the distribution is approximately normal.  
