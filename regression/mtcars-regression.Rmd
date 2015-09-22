@@ -1,0 +1,82 @@
+---
+title: "mtcars-regression"
+author: "Nick"
+date: "Tuesday, September 22, 2015"
+output: html_document
+---
+
+Load data
+
+```{r}
+data(mtcars)
+```
+
+Create linnear model with mpg as the coutcome for all variables
+
+```{r}
+fit <- lm(mpg ~ . , data = mtcars)
+summary(fit)$coefficients
+```
+
+Create linnear model with mpg as the outcome with cyl as predictor
+
+```{r}
+fit_mpg_cyl <- lm(mpg ~ cyl , data = mtcars)
+summary(fit_mpg_cyl)$coefficients
+```
+
+Create linnear model with mpg as the outcome with cyl as predictor & weight as confounder
+
+```{r}
+fit_mpg_cyl_wt <- lm(mpg ~ cyl + wt, data = mtcars)
+summary(fit_mpg_cyl_wt)$coefficients
+```
+
+Examine the means by cyl
+
+```{r}
+library(dplyr)
+summarise(group_by(mtcars, cyl), mn = mean(mpg))
+```
+
+Treat the cyl as a factor with 4 a s base
+
+```{r}
+cyl2 <- relevel(as.factor(mtcars$cyl), "4")
+summary(lm(mpg ~ cyl2 + wt, data = mtcars))$coef
+
+```
+
+Compare difference between 4 & 8 cyl with and without weight variable
+
+```{r}
+summary(lm(mpg ~ cyl2 + wt, data = mtcars))$coef[3,1]
+summary(lm(mpg ~ cyl2, data = mtcars))$coef[3,1]
+```
+
+Compare the above model with a second that considers and interaction between cyl and weight
+
+```{r}
+fitA <- lm(mpg ~ cyl2 + wt, data = mtcars)
+fitB <- lm(mpg ~ cyl2 + wt + wt * cyl2, data = mtcars)
+anova(fitA, fitB)
+```
+
+Scale the weight variable by 0.5
+```{r}
+lm(mpg ~ I(wt * 0.5) + factor(cyl), data = mtcars)
+```
+
+Look at most influential points
+```{r}
+x <- c(0.586, 0.166, -0.042, -0.614, 11.72)
+y <- c(0.549, -0.026, -0.127, -0.751, 1.344)
+fit_x_y <- lm(y ~ x)
+hatvalues(fit_x_y)
+```
+
+Find the dfbeta for the point with the highest hat value
+
+```{r}
+dfbetas(fit_x_y)[5,2]
+```
