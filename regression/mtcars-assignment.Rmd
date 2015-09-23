@@ -1,0 +1,57 @@
+---
+title: "mtcars-assignement"
+author: "Nick"
+date: "Wednesday, September 23, 2015"
+output: html_document
+---
+
+### Context
+
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+"Is an automatic or manual transmission better for MPG"
+
+"Quantify the MPG difference between automatic and manual transmissions"
+
+## Executive Summary
+
+## Detailed Analysis
+
+First lets just have a cursory look at the first few entries in our dataset:
+```{r echo=FALSE}
+data(mtcars)
+head(mtcars)
+```
+
+Here we see some examples of the data and what we can expect to work with.  There are a total of `r ncol(mtcars)` variables and we also know there are a total of `r nrow(mtcars)` observations.
+
+```{r echo=FALSE}
+mpgVsTrans <- data.frame(mpg=mtcars$mpg,trans=as.factor(mtcars$am))
+levels(mpgVsTrans$trans) <- c('Automatic', 'Manual')
+
+automatic.mean <- round(mean(mpgVsTrans[mpgVsTrans$trans == 'Automatic', 1]),2)
+manual.mean <- round(mean(mpgVsTrans[mpgVsTrans$trans == 'Manual', 1]),2)
+means.dat <- data.frame(trans=levels(mpgVsTrans$trans), means=c(automatic.mean, manual.mean))
+
+library(ggplot2)
+g <- ggplot(mpgVsTrans, aes(x = mpg, fill = trans))
+g <- g + geom_histogram(colour = "black", binwidth=2)
+g <- g + geom_vline(aes(xintercept=means), data=means.dat, size=2)
+g <- g + facet_grid(. ~ trans)
+g <- g + coord_fixed(ratio=5)
+```
+
+An inital examination of the data shows that automatic and manual transmissions have a mean of `r automatic.mean` and `r manual.mean` mpg respectively. We can also see the data is fairly sparse given the gaps in the distribution.
+
+```{r fig.width=7, fig.height=3, fig.align='center', echo=FALSE}
+g
+```
+   
+
+## Limitations of Study
+
+There data itself has not mechanism to cross reference our data, many factors can play a role in the consumption of fuel.  Different tire brands compounts, the fuel octane, driver or rolling road used.  This information is not captured.
+
+Ultimately comparing only mpg vs transmission type is likely a trivialisation of the data resulting in *underfitting* we're omitting necessary covariates resulting in *bias*.  Unfortunately with the data at hand fitting more covariates results in large variance thus a less useful model. 
+
+The ideal way to conduct the study would be to have makes and models of cars that have both a manual and automatic variant to pair like with like. Then with all other variables being even we could answer with a higher degree of certainty.
