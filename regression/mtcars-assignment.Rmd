@@ -26,11 +26,11 @@ head(mtcars)
 Here we see some examples of the data and what we can expect to work with.  There are a total of `r ncol(mtcars)` variables and we also know there are a total of `r nrow(mtcars)` observations.
 
 ```{r echo=FALSE}
-mpgVsTrans <- data.frame(mpg=mtcars$mpg,trans=as.factor(mtcars$am))
+mpgVsTrans <- data.frame(trans=as.factor(mtcars$am), mpg=mtcars$mpg)
 levels(mpgVsTrans$trans) <- c('Automatic', 'Manual')
 
-automatic.mean <- round(mean(mpgVsTrans[mpgVsTrans$trans == 'Automatic', 1]),2)
-manual.mean <- round(mean(mpgVsTrans[mpgVsTrans$trans == 'Manual', 1]),2)
+automatic.mean <- round(mean(mpgVsTrans[mpgVsTrans$trans == 'Automatic', 2]),2)
+manual.mean <- round(mean(mpgVsTrans[mpgVsTrans$trans == 'Manual', 2]),2)
 means.dat <- data.frame(trans=levels(mpgVsTrans$trans), means=c(automatic.mean, manual.mean))
 
 library(ggplot2)
@@ -45,6 +45,11 @@ An inital examination of the data shows that automatic and manual transmissions 
 
 ```{r fig.width=7, fig.height=3, fig.align='center', echo=FALSE}
 g
+```
+
+```{r}
+fit <- lm(mpg ~ am , data = mtcars);
+plot(mpgVsTrans, main="Transmission vs MPG");
 ```
    
 
