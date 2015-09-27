@@ -7,11 +7,11 @@ output: pdf_document
 
 ### Context
 
-You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+This paper aims to aswer the following questions in relation to the *mtcars* dataset
 
-"Is an automatic or manual transmission better for MPG"
+* "Is an automatic or manual transmission better for MPG"
 
-"Quantify the MPG difference between automatic and manual transmissions"
+* "Quantify the MPG difference between automatic and manual transmissions"
 
 ## Executive Summary
 
@@ -49,10 +49,6 @@ An initial examination of the data shows that automatic and manual transmissions
 
 ```{r fig.width=7, fig.height=3, fig.align='center', echo=FALSE}
 g
-```
-
-```{r fig.width=7, fig.height=4, fig.align='center'}
-plot(mpgVsTrans, main="Transmission vs MPG");
 ```
    
 From the plot above we can see there is a definite trend to manual being more fuel efficient.  So lets fit a linear model and examine the numbers.
@@ -94,6 +90,10 @@ Ultimately comparing only mpg vs transmission type is likely a trivialisation of
 The ideal way to conduct the study would be to have makes and models of cars that have both a manual and automatic variant to pair like with like. Then with all other variables being even we could answer with a higher degree of certainty.
 
 ## Supporting Figures
+
+```{r fig.width=7, fig.height=4, fig.align='center'}
+plot(mpgVsTrans, main="Transmission vs MPG");
+```
 
 ```{r}
 plot(mtcars$am, mtcars$mpg, xlab="Transmission", ylab="MPG", main="Transmission vs MPG")
