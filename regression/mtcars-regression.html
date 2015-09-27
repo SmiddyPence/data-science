@@ -99,13 +99,13 @@ summary(fit_mpg_cyl_wt)$coefficients</code></pre>
 ## wt          -3.190972  0.7569065 -4.215808 2.220200e-04</code></pre>
 <p>Examine the means by cyl</p>
 <pre class="r"><code>library(dplyr)</code></pre>
-<pre><code>## Warning: package 'dplyr' was built under R version 3.2.2</code></pre>
+<pre><code>## Warning: package 'dplyr' was built under R version 3.1.2</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'
 ## 
-## The following objects are masked from 'package:stats':
+## The following object is masked from 'package:stats':
 ## 
-##     filter, lag
+##     filter
 ## 
 ## The following objects are masked from 'package:base':
 ## 
@@ -113,11 +113,10 @@ summary(fit_mpg_cyl_wt)$coefficients</code></pre>
 <pre class="r"><code>summarise(group_by(mtcars, cyl), mn = mean(mpg))</code></pre>
 <pre><code>## Source: local data frame [3 x 2]
 ## 
-##     cyl       mn
-##   (dbl)    (dbl)
-## 1     4 26.66364
-## 2     6 19.74286
-## 3     8 15.10000</code></pre>
+##   cyl       mn
+## 1   4 26.66364
+## 2   6 19.74286
+## 3   8 15.10000</code></pre>
 <p>Treat the cyl as a factor with 4 a s base</p>
 <pre class="r"><code>cyl2 &lt;- relevel(as.factor(mtcars$cyl), &quot;4&quot;)
 summary(lm(mpg ~ cyl2 + wt, data = mtcars))$coef</code></pre>
@@ -131,6 +130,36 @@ summary(lm(mpg ~ cyl2 + wt, data = mtcars))$coef</code></pre>
 <pre><code>## [1] -6.07086</code></pre>
 <pre class="r"><code>summary(lm(mpg ~ cyl2, data = mtcars))$coef[3,1]</code></pre>
 <pre><code>## [1] -11.56364</code></pre>
+<p>Compare the above model with a second that considers and interaction between cyl and weight</p>
+<pre class="r"><code>fitA &lt;- lm(mpg ~ cyl2 + wt, data = mtcars)
+fitB &lt;- lm(mpg ~ cyl2 + wt + wt * cyl2, data = mtcars)
+anova(fitA, fitB)</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: mpg ~ cyl2 + wt
+## Model 2: mpg ~ cyl2 + wt + wt * cyl2
+##   Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+## 1     28 183.06                           
+## 2     26 155.89  2     27.17 2.2658 0.1239</code></pre>
+<p>Scale the weight variable by 0.5</p>
+<pre class="r"><code>lm(mpg ~ I(wt * 0.5) + factor(cyl), data = mtcars)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ I(wt * 0.5) + factor(cyl), data = mtcars)
+## 
+## Coefficients:
+##  (Intercept)   I(wt * 0.5)  factor(cyl)6  factor(cyl)8  
+##       33.991        -6.411        -4.256        -6.071</code></pre>
+<p>Look at most influential points</p>
+<pre class="r"><code>x &lt;- c(0.586, 0.166, -0.042, -0.614, 11.72)
+y &lt;- c(0.549, -0.026, -0.127, -0.751, 1.344)
+fit_x_y &lt;- lm(y ~ x)
+hatvalues(fit_x_y)</code></pre>
+<pre><code>##         1         2         3         4         5 
+## 0.2286650 0.2438146 0.2525027 0.2804443 0.9945734</code></pre>
+<p>Find the dfbeta for the point with the highest hat value</p>
+<pre class="r"><code>dfbetas(fit_x_y)[5,2]</code></pre>
+<pre><code>## [1] -133.8226</code></pre>
 
 
 </div>

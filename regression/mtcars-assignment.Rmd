@@ -2,7 +2,7 @@
 title: "mtcars-assignement"
 author: "Nick"
 date: "Wednesday, September 23, 2015"
-output: html_document
+output: pdf_document
 ---
 
 ### Context
@@ -15,9 +15,13 @@ You work for Motor Trend, a magazine about the automobile industry. Looking at a
 
 ## Executive Summary
 
+With the data we have at hand it appears that manual transmissions have a positive influence on mpg, in that they reduce the amount of fuels used.
+
+It also appears that other variables may exert more influence over the response, with horse power and weight to definitely be considered.
+
 ## Detailed Analysis
 
-First lets just have a cursory look at the first few entries in our dataset:
+First let's just have a cursory look at the first few entries in our dataset:
 ```{r echo=FALSE}
 data(mtcars)
 head(mtcars)
@@ -41,22 +45,64 @@ g <- g + facet_grid(. ~ trans)
 g <- g + coord_fixed(ratio=5)
 ```
 
-An inital examination of the data shows that automatic and manual transmissions have a mean of `r automatic.mean` and `r manual.mean` mpg respectively. We can also see the data is fairly sparse given the gaps in the distribution.
+An initial examination of the data shows that automatic and manual transmissions have a mean of `r automatic.mean` and `r manual.mean` mpg respectively. We can also see the data is fairly sparse given the gaps in the distribution.
 
 ```{r fig.width=7, fig.height=3, fig.align='center', echo=FALSE}
 g
 ```
 
-```{r}
-fit <- lm(mpg ~ am , data = mtcars);
+```{r fig.width=7, fig.height=4, fig.align='center'}
 plot(mpgVsTrans, main="Transmission vs MPG");
 ```
    
+From the plot above we can see there is a definite trend to manual being more fuel efficient.  So lets fit a linear model and examine the numbers.
+
+```{r}
+fit <- lm(mpg ~ am, data = mtcars);
+summary(fit)$coeff
+```
+
+Concretely this shows an positive 7.25 improvement in the manual transmission over automatic.
+
+If we consider the R^2 value, which is the will indicate how much the variable influences the response.
+
+```{r}
+summary(fit)$r.squared
+```
+
+We see that transmission variable only accounts for around 36% variation in the model.
+
+Let's quickly examine some other variables and see their impact on the mpg prediction.
+
+```{r}
+fitWt <- lm(mpg ~ wt, data = mtcars);
+fitHp <- lm(mpg ~ hp, data = mtcars);
+```
+
+Here we can see that both weight and hores power have more of an effect on mpg, with R^2 rates of `r round(summary(fitWt)$r.squared, 2)` and `r round(summary(fitHp)$r.squared, 2)` respectfully.
+
+## Conclusion
+
+So although it appears that the transmission type does play a part in the mpg efficiency there are likely many other variable that will have a stronger influence.  So require further consideration.
 
 ## Limitations of Study
 
-There data itself has not mechanism to cross reference our data, many factors can play a role in the consumption of fuel.  Different tire brands compounts, the fuel octane, driver or rolling road used.  This information is not captured.
+There data itself has not mechanism to cross reference our data, many factors can play a role in the consumption of fuel.  Different tire brands, the fuel octane, driver or rolling road used.  This information is not captured.
 
 Ultimately comparing only mpg vs transmission type is likely a trivialisation of the data resulting in *underfitting* we're omitting necessary covariates resulting in *bias*.  Unfortunately with the data at hand fitting more covariates results in large variance thus a less useful model. 
 
 The ideal way to conduct the study would be to have makes and models of cars that have both a manual and automatic variant to pair like with like. Then with all other variables being even we could answer with a higher degree of certainty.
+
+## Supporting Figures
+
+```{r}
+plot(mtcars$am, mtcars$mpg, xlab="Transmission", ylab="MPG", main="Transmission vs MPG")
+abline(fit)
+
+plot(mtcars$wt, mtcars$mpg, xlab="Weight", ylab="MPG", main="Transmission vs Weight")
+abline(fitWt)
+
+plot(mtcars$hp, mtcars$mpg, xlab="HP", ylab="MPG", main="Transmission vs HP")
+abline(fitHp)
+```
+
