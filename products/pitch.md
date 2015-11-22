@@ -23,12 +23,23 @@ The Application
 * Controls are on the left, sliders drops downs and a check boxes
 * The main frame is presents the information in a ggplot
 
-Recommended Settings
+Reactive UI
 ========================================================
+The application comes with slider that allows you to select the sample size up to the 100 total.  The interval for the slider is 5.  This is means there is a total of 20 different combinations of sample data to explore!
 
-* Always select Image for one of the controls
-* Image works best as either the colour or row facet
-* Find an interesting plot then active the smooth checkbox
+## Interesting Facts
+
+The mean number of Retweets in the dataset is:
+
+```
+[1] 21.68
+```
+and the mean number of Favourites is:
+
+```
+[1] 24.32
+```
+
 
 References
 ========================================================
