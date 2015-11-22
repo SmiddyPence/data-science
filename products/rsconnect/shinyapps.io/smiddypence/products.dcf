@@ -1,7 +1,8 @@
 name: products
 account: smiddypence
 server: shinyapps.io
-appId: 69643
-bundleId: 314306
+bundleId: 316286
 url: https://smiddypence.shinyapps.io/products
-when: 1447954136.14346
+when: 1448201928.73779
+asMultiple: FALSE
+asStatic: FALSE

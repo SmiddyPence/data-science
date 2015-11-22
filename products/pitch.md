@@ -1,44 +1,46 @@
-Twitter Engagement Explorer
+Imaged Tweets And Engagement
 ========================================================
 author: Nicholas Smith
 date: 19th November 2015 
 transition: rotate
 
-First Slide
+Overview
 ========================================================
 
-For more details on authoring R presentations click the
-**Help** button on the toolbar.
+This applciation allows you explore the amount of engagement recieved by tweets that either did or did not have an image posted with them.
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+You can: 
 
-Slide With Code
+- Explore data by favourties, retweets, clicks
+- Supports plotting on X,Y in addition to colour and an image only facet
+- Add a smoothed mean line with confidence interval
+
+The Application
 ========================================================
 
+![App Picture](./pitch-figure/app.png)
+***
+* Controls are on the left, sliders drops downs and a check boxes
+* The main frame is presents the information in a ggplot
 
-```r
-summary(cars)
-```
-
-```
-     speed           dist       
- Min.   : 4.0   Min.   :  2.00  
- 1st Qu.:12.0   1st Qu.: 26.00  
- Median :15.0   Median : 36.00  
- Mean   :15.4   Mean   : 42.98  
- 3rd Qu.:19.0   3rd Qu.: 56.00  
- Max.   :25.0   Max.   :120.00  
-```
-
-Slide With Plot
+Recommended Settings
 ========================================================
 
-![plot of chunk unnamed-chunk-2](pitch-figure/unnamed-chunk-2-1.png) 
+* Always select Image for one of the controls
+* Image works best as either the colour or row facet
+* Find an interesting plot then active the smooth checkbox
 
-Slide With Plot
+References
 ========================================================
 
-![plot of chunk unnamed-chunk-3](pitch-figure/unnamed-chunk-3-1.png) 
+### Data 
+The data used in the application can be found on this blog
+https://blog.bufferapp.com/the-power-of-twitters-new-expanded-images-and-how-to-make-the-most-of-it
+
+### Tutorial
+Inspiration and basis for the UI and Server came from the diamonds example in Shiny tutorial
+http://rstudio.github.io/shiny/tutorial/
+
+
+
 
