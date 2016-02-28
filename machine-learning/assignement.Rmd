@@ -18,7 +18,7 @@ With that in mind I try to identify a small number of features to use for predic
 ### Study Steps
 
 Load the required libraries
-```{r}
+```{r, echo=FALSE}
 library(caret)
 ```
 
@@ -31,7 +31,7 @@ set.seed(9582)
 
 The data is not very well documented and is fairly wide.  So we're going to create a random sample of 10% of the testing set. Then run a random forest model with all variables as predictors and assess the variable importance.
  
-```{r sampleModel, cache=TRUE}
+```{r sampleModel, cache=TRUE, echo=FALSE}
 tenPc <- round(nrow( pmlTraining)/10)
 randSubSet <- pmlTraining[sample(1:nrow(pmlTraining), tenPc, replace=FALSE),] 
 
@@ -58,7 +58,6 @@ features <- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y
 subTest <- pmlTesting[,features]
 prediction <- predict(model, subTest)
 prediction 
-# B A B A A A D B A A B C B A E E A B B B
 ```
 
 ### Cross Validation
@@ -67,6 +66,6 @@ I'm not performing cross validation due to time a processing limitations.  If we
 
 ### Conclusion
 
-This outcome may seem fairly naive, but there I feel I achieved a good result with a simple approach.  The outcome in the test was 19/20 as a **5% out of sample error rate**.  In order to improve further I could have would have likely had to put in significantly more effort.
+This outcome may seem fairly naive, but I feel I achieved a good result with a simple approach.  The outcome in the test was 19/20 as a **5% out of sample error rate**.  In order to improve further I could have would have likely had to put in significantly more effort.
 
-My laptop was not up to processing such a large wide data set.  Just running creating the `sampleModel` took 30 minutes of processing.  Sometimes we have to work with what we have rather than what we would like, so I had to keep it simple.
+My laptop was not up to processing such a large wide data set.  Just creating the `sampleModel` took 30 minutes of processing.  Sometimes we have to work with what we have rather than what we would like, so I had to keep it simple.
