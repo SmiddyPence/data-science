@@ -79,19 +79,13 @@ img {
 <div id="study-steps" class="section level3">
 <h3>Study Steps</h3>
 <p>Load the required libraries</p>
-<pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice
 ## Loading required package: ggplot2</code></pre>
 <p>Load the sample data sets:</p>
+<pre class="r"><code>pmlTraining &lt;-read.csv(&quot;pml-training.csv&quot;)
+pmlTesting &lt;-read.csv(&quot;pml-testing.csv&quot;)
+set.seed(9582)</code></pre>
 <p>The data is not very well documented and is fairly wide. So we’re going to create a random sample of 10% of the testing set. Then run a random forest model with all variables as predictors and assess the variable importance.</p>
-<pre class="r"><code>tenPc &lt;- round(nrow( pmlTraining)/10)
-randSubSet &lt;- pmlTraining[sample(1:nrow(pmlTraining), tenPc, replace=FALSE),] 
-
-sampleModel &lt;- train(classe ~ ., method='rf', randSubSet)</code></pre>
-<pre><code>## Loading required package: randomForest
-## randomForest 4.6-12
-## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre class="r"><code>varImp(sampleModel)</code></pre>
 <pre><code>## rf variable importance
 ## 
 ##   only 20 most important variables shown (out of 6952)
@@ -121,16 +115,8 @@ sampleModel &lt;- train(classe ~ ., method='rf', randSubSet)</code></pre>
 <p><strong>accel_arm_x, magnet_belt_x, pitch_forearm, magnet_forearm_y</strong></p>
 <p>The names of this variables sound sensible, if either an <strong>average</strong> or <strong>sd</strong> features were selected I may well have ignored them as they may have been directly related to other features.</p>
 <p>Now we taken an educated guess at some variables of importance lets fit a model with all the samples and the subset of variables. Creating the model this way with fewer variables means the computation completes in a timely manner and more importantly prevents my laptop from spontaneously combusting.</p>
-<pre class="r"><code>features &lt;- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y', 'classe')
-subTrain &lt;- pmlTraining[,features]
-model &lt;- train(classe ~ ., method='rf', subTrain)</code></pre>
-<pre class="r"><code>features &lt;- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y')
-subTest &lt;- pmlTesting[,features]
-prediction &lt;- predict(model, subTest)
-prediction </code></pre>
 <pre><code>##  [1] B A B A A A D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
-<pre class="r"><code># B A B A A A D B A A B C B A E E A B B B</code></pre>
 </div>
 <div id="cross-validation" class="section level3">
 <h3>Cross Validation</h3>
@@ -138,8 +124,8 @@ prediction </code></pre>
 </div>
 <div id="conclusion" class="section level3">
 <h3>Conclusion</h3>
-<p>This outcome may seem fairly naive, but there I feel I achieved a good result with a simple approach. The outcome in the test was 19/20 as a <strong>5% out of sample error rate</strong>. In order to improve further I could have would have likely had to put in significantly more effort.</p>
-<p>My laptop was not up to processing such a large wide data set. Just running creating the <code>sampleModel</code> took 30 minutes of processing. Sometimes we have to work with what we have rather than what we would like, so I had to keep it simple.</p>
+<p>This outcome may seem fairly naive, but I feel I achieved a good result with a simple approach. The outcome in the test was 19/20 as a <strong>5% out of sample error rate</strong>. In order to improve further I could have would have likely had to put in significantly more effort.</p>
+<p>My laptop was not up to processing such a large wide data set. Just creating the <code>sampleModel</code> took 30 minutes of processing. Sometimes we have to work with what we have rather than what we would like, so I had to keep it simple.</p>
 </div>
 
 

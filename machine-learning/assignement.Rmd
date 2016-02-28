@@ -23,7 +23,7 @@ library(caret)
 ```
 
 Load the sample data sets:
-```{r, echo=FALSE}
+```{r}
 pmlTraining <-read.csv("pml-training.csv")
 pmlTesting <-read.csv("pml-testing.csv")
 set.seed(9582)
@@ -31,7 +31,7 @@ set.seed(9582)
 
 The data is not very well documented and is fairly wide.  So we're going to create a random sample of 10% of the testing set. Then run a random forest model with all variables as predictors and assess the variable importance.
  
-```{r sampleModel, cache=TRUE, echo=FALSE}
+```{r sampleModel, cache=TRUE}
 tenPc <- round(nrow( pmlTraining)/10)
 randSubSet <- pmlTraining[sample(1:nrow(pmlTraining), tenPc, replace=FALSE),] 
 
@@ -47,13 +47,13 @@ The names of this variables sound sensible, if either an **average** or **sd** f
 
 Now we taken an educated guess at some variables of importance lets fit a model with all the samples and the subset of variables.  Creating the model this way with fewer variables means the computation completes in a timely manner and more importantly prevents my laptop from spontaneously combusting.
 
-```{r model, cache=TRUE}
+```{r model, cache=TRUE, echo=FALSE}
 features <- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y', 'classe')
 subTrain <- pmlTraining[,features]
 model <- train(classe ~ ., method='rf', subTrain)
 ```
 
-```{r predication, cache=TRUE}
+```{r predication, cache=TRUE, echo=FALSE}
 features <- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y')
 subTest <- pmlTesting[,features]
 prediction <- predict(model, subTest)
