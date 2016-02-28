@@ -1,0 +1,72 @@
+---
+title: "ExerciseClassePredictor"
+output: html_document
+author: Nicholas Smith
+---
+###Purpose
+
+The purpose of this study is to create prediction algorithm for predicting the manner in which a bar bell lift was performed (one of five ways). The data was collected by wearable devices such as Jawbone Up, Nike FuelBand, and Fitbit.
+
+###Study Design
+
+The data for this study is quite large and wide, i.e. 160 variables (features) over 19,622 observations.  This poses a problem for myself as I am taking this course on a laptop, although it is multicore is not ideal for this kind of processing. 
+
+*note while completing this asignment my laptop cut out twice due too overheating*
+
+With that in mind I try to identify a small number of features to use for predication, I'm also not going to evaluate different models as it is not feasible.  I have decided to fit a random forest as model, due to the familiarity I have gained while completing the quizzes.
+
+### Study Steps
+
+Load the required libraries
+```{r}
+library(caret)
+```
+
+Load the sample data sets:
+```{r, echo=FALSE}
+pmlTraining <-read.csv("pml-training.csv")
+pmlTesting <-read.csv("pml-testing.csv")
+set.seed(9582)
+```
+
+The data is not very well documented and is fairly wide.  So we're going to create a random sample of 10% of the testing set. Then run a random forest model with all variables as predictors and assess the variable importance.
+ 
+```{r sampleModel, cache=TRUE}
+tenPc <- round(nrow( pmlTraining)/10)
+randSubSet <- pmlTraining[sample(1:nrow(pmlTraining), tenPc, replace=FALSE),] 
+
+sampleModel <- train(classe ~ ., method='rf', randSubSet)
+varImp(sampleModel)
+```
+
+Based on the outcome from the `varImp` function I have selected:
+
+**accel_arm_x, magnet_belt_x, pitch_forearm, magnet_forearm_y**
+
+The names of this variables sound sensible, if either an **average** or **sd** features were selected I may well have ignored them as they may have been directly related to other features.
+
+Now we taken an educated guess at some variables of importance lets fit a model with all the samples and the subset of variables.  Creating the model this way with fewer variables means the computation completes in a timely manner and more importantly prevents my laptop from spontaneously combusting.
+
+```{r model, cache=TRUE}
+features <- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y', 'classe')
+subTrain <- pmlTraining[,features]
+model <- train(classe ~ ., method='rf', subTrain)
+```
+
+```{r predication, cache=TRUE}
+features <- c('accel_arm_x', 'magnet_belt_x', 'pitch_forearm', 'magnet_forearm_y')
+subTest <- pmlTesting[,features]
+prediction <- predict(model, subTest)
+prediction 
+# B A B A A A D B A A B C B A E E A B B B
+```
+
+### Cross Validation
+
+I'm not performing cross validation due to time a processing limitations.  If were going to I would have divided up training set.  Probably in an 80/20 division as it is a decent rule of thumb.
+
+### Conclusion
+
+This outcome may seem fairly naive, but there I feel I achieved a good result with a simple approach.  The outcome in the test was 19/20 as a **5% out of sample error rate**.  In order to improve further I could have would have likely had to put in significantly more effort.
+
+My laptop was not up to processing such a large wide data set.  Just running creating the `sampleModel` took 30 minutes of processing.  Sometimes we have to work with what we have rather than what we would like, so I had to keep it simple.
