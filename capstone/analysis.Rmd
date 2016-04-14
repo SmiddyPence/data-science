@@ -1,0 +1,153 @@
+---
+title: "Capstone Milestone Report"
+author: "Nicholas Smith"
+date: "13 March 2016"
+output: html_document
+---
+## 0. Load Required Libraries
+
+```{r echo=FALSE}
+#install.packages('tm')
+#install.packages('RWeka')
+#install.packages('slam')
+#http://stackoverflow.com/questions/12872699/error-unable-to-load-installed-packages-just-now
+library(tm)
+library(RWeka)
+library(ggplot2)
+library(slam)
+```
+
+## 1. Load the Data
+
+```{r cache=TRUE, warning=FALSE}
+setwd("~/Documents/data-science/capstone")
+path <- "~/Documents/data-science/capstone/final/en_US"
+newsData		<- readLines(paste(path,"/en_US.news.txt", sep = ''))
+blogsData		<- readLines(paste(path,"/en_US.blogs.txt", sep = ''))
+twitterData		<- readLines(paste(path,"/en_US.twitter.txt", sep = ''))
+```
+
+### Sample 
+
+These datasets are particularly large with **`r length(newsData)`**, **`r length(blogsData)`** and **`r length(twitterData)`** rows of data in the news, blogs and twitter data sets respectively. 
+
+In order to save resources I'm going to use a small sample of the data, 1%.  This will allow me to get fast feedback loop while developing my application.  Allowing me to try more things, without the need to process all the data everytime.  
+
+```{r}
+sampleSize 	<- 0.03
+set.seed(1234)
+newsSubSet 	<- sample(newsData, length(newsData)*sampleSize)
+blogsSubSet 	<- sample(blogsData, length(blogsData)*sampleSize)
+twitterSubSet 	<- sample(twitterData, length(twitterData)*sampleSize)
+sampleSet <- c(newsSubSet, blogsSubSet, twitterSubSet)
+rm(blogsData, newsData, twitterData)
+```
+
+## 2. Clean the Data
+
+### Profanity filtering
+
+Here we remove the whole line that contains a dirty word rather than remove the words itself.  Otherwise we will place words adjancent to one and other that would no normally be.  This would adversly affect the prediction.
+
+The regex uses [7 dirty words](https://en.wikipedia.org/wiki/Seven_dirty_words).  They are as good a representation as any, without getting unessarily into what consititues a dirty work.
+
+```{r}
+sevenDirtyWord <- 'shit|piss|fuck|cunt|cocksucker|motherfucker|tits'
+sampleProfanity <- grepl(sevenDirtyWord, sampleSet)
+sampleSet <- sampleSet[! sampleProfanity]
+```
+
+We can see that from out sample there are `r sum(sampleProfanity)` dirty words in the 1% sample corpus we have selected.
+
+After we have taken away the obsene entries we'll identify all the sentences.  Creating a seperate entry for each as we will not wrawdata = read.csv('TweetImageData.csv')
+ant our n-grams to straddle a sentence termination.  
+
+### Tidy the data
+
+We're also going to strip out all other non alpha characters and tidy up the white space that processing creates.
+
+```{r}
+sampleSet <- iconv(sampleSet, "UTF-8","ASCii","byte")
+options(mc.cores=1)
+sampleCorpus <- Corpus(VectorSource(sampleSet))
+sampleCorpus <- tm_map(sampleCorpus, tolower)
+sampleCorpus <- tm_map(sampleCorpus, removePunctuation)
+sampleCorpus <- tm_map(sampleCorpus, removeNumbers)
+sampleCorpus <- tm_map(sampleCorpus, stripWhitespace)
+sampleCorpus <- tm_map(sampleCorpus, PlainTextDocument)
+
+#sampleSet <- unlist(strsplit(sampleSet,"[\\.]|[?]|[!]"))
+#sampleSet <- gsub("[^[:alpha:] ]", "", sampleSet)
+#sampleSet <- gsub("^\\s+", "", sampleSet)
+#sampleSet <- gsub("\\s+$", "", sampleSet)
+#sampleSet <- gsub("\\s+", " ", sampleSet)
+#sampleSet <- sampleSet[sampleSet != ""]
+```
+
+What about single apostrophes?  Well we could do something more clever with these, i.e. word steming or expand to the full word.  We can perhaps look at that in the future when refining and tuning our application.
+
+
+### 3. Exploritory analysis
+
+Until now we have been treating the data as text in vectors, we will convert the data to a Corpus class from the `tm` package to probe the data in interesting ways.  We use a significantly lower `lowfreq` term for bigrams as they inherently occur less frequently.
+
+```{r cache=TRUE}
+unigramFunc = function(x) NGramTokenizer(x, Weka_control(min = 1, max = 1))
+bigramFunc = function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
+trigramFunc = function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+
+unigramMatrix = TermDocumentMatrix(sampleCorpus, control = list(tokenize = unigramFunc))
+bigramMatrix = TermDocumentMatrix(sampleCorpus, control = list(tokenize = bigramFunc))
+trigramMatrix = TermDocumentMatrix(sampleCorpus, control = list(tokenize = trigramFunc))
+
+unigramfreqTerms = findFreqTerms(unigramMatrix)
+bigramfreqTerms = findFreqTerms(bigramMatrix)
+trigramfreqTerms = findFreqTerms(trigramMatrix)
+
+unigramMatrix = rollup(unigramMatrix, 2, na.rm=TRUE, FUN = sum)
+unigramFreq = rowSums(as.matrix(unigramMatrix[unigramfreqTerms,]))
+unigramFreq = data.frame(unigram=names(unigramFreq), Frequency=unigramFreq)
+write.csv(unigramFreq, "unigrams.csv", row.names = FALSE)
+
+bigramMatrix = rollup(bigramMatrix, 2, na.rm=TRUE, FUN = sum)
+bigramFreq = rowSums(as.matrix(bigramMatrix[bigramfreqTerms,]))
+bigramFreq = data.frame(bigram=names(bigramFreq), Frequency=bigramFreq)
+write.csv(bigramFreq, "bigrams.csv", row.names = FALSE)
+
+trigramMatrix = rollup(trigramMatrix, 2, na.rm=TRUE, FUN = sum)
+trigramFreq = rowSums(as.matrix(trigramMatrix[trigramfreqTerms,]))
+trigramFreq = data.frame(trigram=names(trigramFreq), Frequency=trigramFreq)
+write.csv(trigramFreq, "trigrams.csv", row.names = FALSE)
+```
+
+No we have constructed data frames of our unigram and bigram results we can have a look at the most used single words in our corpus:
+
+```{r}
+#ggplot(unigramFreq, aes(x=reorder(unigramFreq, Frequency), y=Frequency)) +
+#    geom_bar(stat = "identity") +  coord_flip() +
+#    xlab("UniGram") + ylab("Frequency") +
+#    labs(title = "Most Common Unigrams")
+```
+
+The most popular bi grams in our corpus are:
+
+```{r}
+#ggplot(bigramFreq, aes(x=reorder(bigram, Frequency), y=Frequency)) +
+#    geom_bar(stat = "identity") +  coord_flip() +
+#    xlab("BiGram") + ylab("Frequency") +
+#    labs(title = "Most Common Bigrams")
+```
+
+The most popular tri grams in our corpus are:
+
+```{r}
+#ggplot(trigramFreq, aes(x=reorder(trigram, Frequency), y=Frequency)) +
+#    geom_bar(stat = "identity") +  coord_flip() +
+#    xlab("TriGram") + ylab("Frequency") +
+#labs(title = "Most Common Trigrams")
+```
+
+```{r}
+result <- trigramFreq[grep("^his little", trigramFreq$trigram), ]
+result <- trigramFreq[grep("^his little", trigramFreq$trigram), ]
+```
